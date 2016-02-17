@@ -58,11 +58,13 @@ class PagePartTwigExtension extends \Twig_Extension
     public function renderPageParts(array $twigContext, HasPagePartsInterface $page, $contextName = "main", array $parameters = array())
     {
         $template = $this->environment->loadTemplate("KunstmaanPagePartBundle:PagePartTwigExtension:widget.html.twig");
+
         /* @var $entityRepository PagePartRefRepository */
         $entityRepository = $this->em->getRepository('KunstmaanPagePartBundle:PagePartRef');
         $pageparts = $entityRepository->getPageParts($page, $contextName);
         $newTwigContext = array_merge($parameters, array(
-            'pageparts' => $pageparts
+            'hasPageparts' => $page,
+            'pageparts'    => $pageparts
         ));
         $newTwigContext = array_merge($newTwigContext, $twigContext);
 
