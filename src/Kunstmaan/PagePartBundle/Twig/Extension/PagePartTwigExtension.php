@@ -51,6 +51,7 @@ class PagePartTwigExtension extends \Twig_Extension
         $pageparts = $entityRepository->getPageParts($page, $contextName);
         $newTwigContext = array_merge($parameters, array(
             'pageparts' => $pageparts,
+            'hasPageparts' => $page, // USE TODO odstranit 'hasPageparts' a pouzit 'page'
             'page' => $page
         ));
         $newTwigContext = array_merge($newTwigContext, $twigContext);
