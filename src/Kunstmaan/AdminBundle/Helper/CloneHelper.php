@@ -46,7 +46,7 @@ class CloneHelper
         $this->eventDispatcher->dispatch(Events::DEEP_CLONE_AND_SAVE, new DeepCloneAndSaveEvent($entity, $clonedEntity, $this->em));
 
         $this->em->persist($clonedEntity);
-        $this->em->flush();
+        $this->em->flush($clonedEntity);
 
         $this->eventDispatcher->dispatch(Events::POST_DEEP_CLONE_AND_SAVE, new DeepCloneAndSaveEvent($entity, $clonedEntity, $this->em));
 
