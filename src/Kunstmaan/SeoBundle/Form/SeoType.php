@@ -29,12 +29,12 @@ class SeoType extends AbstractType
         $builder->add('id', 'hidden')
         ->add('metaTitle', null, array(
                 'label' => 'Title',
-                'max_length' => 55,
+                'max_length' => 255,
                 'attr' => array(
                 'info_text' => 'The title tag is often used on search engine results pages. It should be less than 55 characters.'
             )
         ))
-        ->add('metaDescription', null, array('label' => 'Meta description', 'max_length' => 155));
+        ->add('metaDescription', null, array('label' => 'Meta description', 'max_length' => 255));
 
         $builder->add('metaRobots', 'choice', array(
             'choices'   => array(
