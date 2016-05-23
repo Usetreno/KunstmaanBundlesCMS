@@ -58,7 +58,7 @@ services:
             - '@doctrine.orm.entity_manager'
         tags:
             - { name: twig.extension }
-            
+
     kunstmaan_pagetemplate.twig.extension:
         class: 'Kunstmaan\PagePartBundle\Twig\Extension\PageTemplateTwigExtension'
         arguments:
@@ -91,3 +91,8 @@ services:
 
         tags:
             - { name: kernel.event_listener, event: kunstmaan_admin.postDeepCloneAndSave, method: postDeepCloneAndSave }
+
+    kunstmaan_pageparts.listener.page_part_ref_save_subscriber:
+        class: Kunstmaan\PagePartBundle\EventListener\PagePartRefSaveSubscriber
+        tags:
+            - { name: doctrine.event_subscriber }

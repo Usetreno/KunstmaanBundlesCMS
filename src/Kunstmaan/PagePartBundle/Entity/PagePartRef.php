@@ -4,6 +4,9 @@ namespace Kunstmaan\PagePartBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\EntityManager;
+use Kunstmaan\PagePartBundle\Helper\HasPagePartsInterface;
+use Kunstmaan\PagePartBundle\Helper\PagePartInterface;
+use Kunstmaan\UtilitiesBundle\Helper\ClassLookup;
 
 /**
  * Reference between a page and a pagepart
@@ -62,12 +65,84 @@ class PagePartRef
     protected $updated;
 
     /**
+     * @var HasPagePartsInterface
+     */
+    private $pageEntity;
+
+    /**
+     * @var PagePartInterface
+     */
+    private $pagePartEntity;
+
+    /**
      * The constructor
      */
     public function __construct()
     {
         $this->setCreated(new \DateTime());
         $this->setUpdated(new \DateTime());
+    }
+
+    /**
+     * @param HasPagePartsInterface $page
+     * @param string                $context
+     * @param int                   $sequenceNumber
+     * @param PagePartInterface     $pagePart
+     *
+     * @return PagePartRef
+     */
+    public static function createForPage(
+        HasPagePartsInterface $page,
+        $context,
+        $sequenceNumber,
+        PagePartInterface $pagePart
+    ) {
+        $ref = new self();
+
+        $ref->pageEntity     = $page;
+        $ref->context        = $context;
+        $ref->sequencenumber = $sequenceNumber;
+        $ref->pagePartEntity = $pagePart;
+
+        return $ref;
+    }
+
+    /**
+     * @return bool
+     *
+     * @internal Used by PagePartRefSaveSubscriber
+     */
+    public function needsDelayedFlush()
+    {
+        if (!$this->pageEntity || !$this->pagePartEntity) {
+            return false;
+        }
+
+        if (
+            $this->pageId && $this->pagePartId &&
+            $this->pageEntity->getId() == $this->pageId &&
+            $this->pagePartEntity->getId() == $this->pagePartId
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @internal Used by PagePartRefSaveSubscriber
+     */
+    public function updateRefFromEntities()
+    {
+        if (!$this->pageEntity || !$this->pagePartEntity) {
+            return;
+        }
+
+        $this->setPageId($this->pageEntity->getId());
+        $this->setPageEntityname(ClassLookup::getClass($this->pageEntity));
+
+        $this->setPagePartId($this->pagePartEntity->getId());
+        $this->setPagePartEntityname(ClassLookup::getClass($this->pagePartEntity));
     }
 
     /**
@@ -263,12 +338,30 @@ class PagePartRef
     }
 
     /**
-     * @param \Doctrine\ORM\EntityManager $em
+     * @param EntityManager $em
      *
-     * @return \Kunstmaan\PagePartBundle\Helper\PagePartInterface
+     * @return HasPagePartsInterface
+     */
+    public function getPage(EntityManager $em)
+    {
+        if (!$this->pageEntity) {
+            $this->pageEntity = $em->getRepository($this->getPageEntityname())->find($this->getPageId());
+        }
+
+        return $this->pageEntity;
+    }
+
+    /**
+     * @param EntityManager $em
+     *
+     * @return PagePartInterface
      */
     public function getPagePart(EntityManager $em)
     {
-        return $em->getRepository($this->getPagePartEntityname())->find($this->getPagePartId());
+        if (!$this->pagePartEntity) {
+            $this->pagePartEntity = $em->getRepository($this->getPagePartEntityname())->find($this->getPagePartId());
+        }
+
+        return $this->pagePartEntity;
     }
 }
